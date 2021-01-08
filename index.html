@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hurrr</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/spectre.css/dist/spectre.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css"
+    />
+  </head>
+  <style>
+    h3 {
+      margin-top: 20px;
+      margin-bottom: 0px;
+      padding-bottom: 0px;
+    }
+    table {
+      margin-top: 0px;
+      margin-bottom: 20px;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <p>
+        This page does not automatically update, because I don't know how often
+        this information should be updated yet. <b>Refresh</b> every couple
+        minutes and let me know.
+      </p>
+      <p>
+        Couple of things left to do:
+        <li>Auto Update</li>
+        <li>Live broadcast/user count</li>
+        <li>
+          Pop-up modal to display more room information, such as cam images and
+          the room/account's avatar
+        </li>
+      </p>
+      <div class="columns">
+        <div class="column">
+          <h3>Promoted</h3>
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Room</th>
+                <th>Users</th>
+                <th>Broadcasters</th>
+              </tr>
+            </thead>
+            <tbody id="promoted"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <h3>All Rooms (only public?)</h3>
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Room</th>
+                <th>Users</th>
+                <th>Broadcasters</th>
+              </tr>
+            </thead>
+            <tbody id="rooms"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <h3>Most Gifted Accounts</h3>
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Users</th>
+                <th>Broadcasters</th>
+                <th>Icon</th>
+              </tr>
+            </thead>
+            <tbody id="gifted"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+  <!-- <script type="text/javascript" src="static/main.js"></script> -->
+  <script>
+    function gen_modal(item) {
+      let modal =
+        `
+<div class="modal" id="modal-id">
+  <a href="#close" class="modal-overlay" aria-label="Close"></a>
+  <div class="modal-container">
+    <div class="modal-header">
+      <a href="#close" class="btn btn-clear float-right" aria-label="Close"></a>
+      <div class="modal-title h5">` +
+        item.name +
+        `</div>
+    </div>
+    <div class="modal-body">
+      <div class="content">
+<div class="card">
+  <div class="card-image">
+    <img src="` +
+        item.general_icon +
+        `" class="img-responsive">
+  </div>
+  <div class="card-header">
+    <div class="card-title h5">` +
+        item.name +
+        `</div>
+<div class="card-subtitle text-grey">TODO: Images</div>
+  </div>
+  <div class="card-body">` +
+        item.description +
+        `</div>
+  <div class="card-footer">
+  </div>
+</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+    </div>
+  </div>
+</div>
+     `;
+      return modal;
+    }
+    function gen_promoted(data) {
+      let existing = [];
+      let html = "";
+      data.forEach(function (item) {
+        html +=
+          `<tr><td><a target="_blank" href="https://tinychat.com/` +
+          item.name +
+          `">` +
+          item.name +
+          `</a></td><td>` +
+          item.users.watching_count +
+          `</td><td>` +
+          item.users.broadcasting_count +
+          `</td></tr>`;
+      });
+      document.getElementById("promoted").innerHTML = html;
+    }
+    function gen_allrooms(data) {
+      let existing = [];
+      let html = "";
+      data.forEach(function (item) {
+        if (existing.includes(item.name) != true) {
+          html +=
+            `<tr><td><a target="_blank" href="https://tinychat.com/` +
+            item.name +
+            `">` +
+            item.name +
+            `</a></td><td>` +
+            item.users.watching_count +
+            `</td><td>` +
+            item.users.broadcasting_count +
+            `</td></tr>`;
+          existing.push(item.name);
+        }
+      });
+      document.getElementById("rooms").innerHTML = html;
+    }
+    function gen_mostgifted(data) {
+      let html = "";
+      data.forEach(function (item) {
+        html +=
+          `<tr><td><a target="_blank" href="https://tinychat.com/` +
+          item.name +
+          `">` +
+          item.name +
+          `</a></td><td>` +
+          item.users.watching_count +
+          `</td><td>` +
+          item.users.broadcasting_count +
+          `</td><td><img src="` +
+          item.status_icon +
+          `"></td></tr>`;
+      });
+      document.getElementById("gifted").innerHTML = html;
+    }
+    function generate(data) {
+      gen_promoted(data.promoted);
+      gen_allrooms(data.rooms.all);
+      gen_mostgifted(data.rooms["most-gifted"]);
+    }
+    function get_tc() {
+      var request = new XMLHttpRequest();
+      var json;
+      request.open("GET", "http://localhost:8000/api", true);
+
+      request.onload = function () {
+        json = JSON.parse(this.response);
+        console.log(json);
+        generate(json);
+      };
+      request.send();
+    }
+    get_tc();
+  </script>
+</html>
